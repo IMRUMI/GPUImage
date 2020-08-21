@@ -4,6 +4,8 @@
 #import "GLProgram.h"
 #import "GPUImageFilter.h"
 
+static BOOL allowWriteAudio = NO;
+
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE
 NSString *const kGPUImageColorSwizzlingFragmentShaderString = SHADER_STRING
 (
@@ -249,6 +251,7 @@ NSString *const kGPUImageColorSwizzlingFragmentShaderString = SHADER_STRING
 {
     isRecording = YES;
     startTime = kCMTimeInvalid;
+    allowWriteAudio = NO;
 	//    [assetWriter startWriting];
     
 	//    [assetWriter startSessionAtSourceTime:kCMTimeZero];
@@ -313,6 +316,9 @@ NSString *const kGPUImageColorSwizzlingFragmentShaderString = SHADER_STRING
 
 - (void)processAudioBuffer:(CMSampleBufferRef)audioBuffer;
 {
+    if (!allowWriteAudio) {
+        return;
+    }
     if (!isRecording)
     {
         return;
@@ -505,6 +511,7 @@ NSString *const kGPUImageColorSwizzlingFragmentShaderString = SHADER_STRING
     if(![assetWriterPixelBufferInput appendPixelBuffer:pixel_buffer withPresentationTime:frameTime]) 
     {
         NSLog(@"Problem appending pixel buffer at time: %lld", frameTime.value);
+        allowWriteAudio = YES;
     } 
     else 
     {
